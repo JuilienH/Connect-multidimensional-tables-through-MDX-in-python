@@ -7,19 +7,18 @@ from datetime import datetime as dt
 
 # Build connection string 
 ##Catalog is the database
-conn_str = 'Provider=MSOLAP; Data Source=asazure://aspaaseastus2.asazure.windows.net/marcaas;Catalog=Ferias;'
+conn_str = 'Provider=PRODIVERINFO; Data Source=YourDatabaseURL;Catalog=OPTIONAL_DATABASENAME;'
 
 # Enter DAX or MDX query
 dax_query = """SELECT
- [Scenarios].[Scenario].&[Total Actuals]*{[Line Of Business].[Line Of Business].&[Total Postpaid],[Line Of Business].[Line Of Business].&[AT&T Wireless Broadband]}*{[Subscription Devices].[Subscription Device].&[Mobile Wireless],[Subscription Devices].[Subscription Device].&[Voice Device],[Subscription Devices].[Subscription Device]}*{ [Measures].[Gross Adds],
-       [Measures].[Net Disconnects],[Measures].[Net Adds],[Measures].[Net Invol Disc]
+ Field1*{Field2.&Value1,Field2.&Value2}*{Field3.&Value1,Field3.&Value2
 	 } ON 0,
   
-  {[Calendar].[Date].[Date]} ON 1
+  {Field4} ON 1
  
 FROM
-   [Model]
-WHERE ({[Calendar].[Year].&[2022],[Calendar].[Year].&[2023]},[Liability].[Liability].&[Corporate Responsibility User],[Business Units].[Business Unit].&[Small Business/Mid Market BU Group])"""
+   Database_cube
+WHERE ({Field4.&Value1,Field4.&Value2},Field5.&Value1,Field6.&Value1)"""
 
 # Output results as pandas dataframe
 with Pyadomd(conn_str) as conn:
@@ -32,14 +31,11 @@ with Pyadomd(conn_str) as conn:
 #                   'OriginalColumnName2':'NewColumnName2',
 #                   'OriginalColumnName3':'NewColumnName3'},
 #          inplace = True)
-df['[Calendar].[Date].[Date].[MEMBER_CAPTION]']=pd.to_datetime(df['[Calendar].[Date].[Date].[MEMBER_CAPTION]'])
+df['date_column']=pd.to_datetime(df['date_column'])
 #print(df.dtypes)
 
-df['year']=df['[Calendar].[Date].[Date].[MEMBER_CAPTION]'].dt.year
-df['quarter']=df['[Calendar].[Date].[Date].[MEMBER_CAPTION]'].dt.quarter
-df['month']=df['[Calendar].[Date].[Date].[MEMBER_CAPTION]'].dt.month
+df['year']=df['date_column'].dt.year
+df['quarter']=df['date_column'].dt.quarter
+df['month']=df['date_column'].dt.month
 df['index']=df.index
-df.to_csv('Ferias_wireless.csv')
-#df_total_disco = df.groupby(['year','quarter','[Scenarios].[Scenario].&[Total Actuals].[Line Of Business].[Line Of Business].&[Total Postpaid].[Subscription Devices].[Subscription Device].&[Mobile Wireless].[Measures].[Net Disconnects]'])['index'].count()
-
-#df_total_disco.to_csv('total_disco.csv')
+df.to_csv('file_name.csv')
